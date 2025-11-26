@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "app/api/foods/route.js", "app/api/daily-summary/route.js", "app/api/logs/[id]/route.js", "app/api/logs/route.js", "app/api/recommend/route.ts"  ],
   "exclude": ["node_modules"]
 }

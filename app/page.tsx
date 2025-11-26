@@ -1,65 +1,120 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, useCallback, useEffect } from "react";
+import MacroDisplay from "@/components/MacroDisplay.client";
+import FoodSearch from "@/components/FoodSearch.client";
+import TodayLog from "@/components/TodayLog.client";
+import Recommendations from "@/components/Recommendations.client";
+import { toDateString } from "@/utils/formatters";
+import { MEAL_ORDER } from "@/utils/constants";
+
+// Replace with a real userId from DB (e.g., from auth)
+const DEFAULT_USER_ID = "69244d641d47c0b4cb256057";
+
+export default function DashboardPage() {
+  const today = toDateString(new Date());
+  const [userId] = useState<string>(DEFAULT_USER_ID);
+  const [date] = useState<string>(today);
+  const [meal, setMeal] = useState<"breakfast" | "lunch" | "dinner" | "snacks">(
+    "lunch"
+  );
+
+  const [targets, setTargets] = useState<any>(null);
+  const [consumed, setConsumed] = useState<any>(null);
+  const [loadingSummary, setLoadingSummary] = useState<boolean>(false);
+
+  const [refreshKey, setRefreshKey] = useState(0);
+  const refreshAll = useCallback(() => setRefreshKey((k) => k + 1), []);
+
+  async function loadSummary() {
+    if (!userId || !date) return;
+    setLoadingSummary(true);
+    try {
+      const res = await fetch(`/api/daily-summary?userId=${userId}&date=${date}`);
+      const j = await res.json();
+      if (j.success) {
+        setTargets(j.targets);
+        setConsumed(j.consumed);
+      } else {
+        console.error("Daily summary failed:", j.message);
+      }
+    } catch (err: any) {
+      console.error("Summary API error:", err.message);
+    } finally {
+      setLoadingSummary(false);
+    }
+  }
+
+  useEffect(() => {
+    loadSummary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, date, refreshKey]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* LEFT COLUMN */}
+      <div className="lg:col-span-1 space-y-4">
+        <MacroDisplay
+          targets={targets || {}}
+          consumed={consumed || {}}
+          key={`macro-${refreshKey}`}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+
+        <TodayLog
+          userId={userId}
+          date={date}
+          onChanged={refreshAll}
+          key={`log-${refreshKey}`}
+        />
+      </div>
+
+      {/* RIGHT COLUMN */}
+      <div className="lg:col-span-2 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            {MEAL_ORDER.map((m) => (
+              <button
+                key={m}
+                onClick={() => setMeal(m as any)}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  meal === m ? "bg-blue-600 text-white" : "bg-white border"
+                }`}
+              >
+                {m.charAt(0).toUpperCase() + m.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3 text-sm text-gray-500">
+            <div>{date}</div>
+            {loadingSummary && <span className="text-xs text-gray-400">Updating…</span>}
+            <button
+              onClick={refreshAll}
+              className="px-2 py-1 border rounded-md bg-white"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Refresh
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FoodSearch
+            userId={userId}
+            date={date}
+            meal={meal}
+            onAdded={refreshAll}
+            key={`search-${refreshKey}`}
+          />
+
+          <Recommendations
+            userId={userId}
+            date={date}
+            meal={meal}
+            onAdded={refreshAll}
+            key={`rec-${refreshKey}`}
+          />
         </div>
-      </main>
+      </div>
     </div>
   );
 }
