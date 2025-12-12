@@ -1,6 +1,7 @@
-import "./globals.css";
+import "./globals.css"; 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata = {
   title: "FitFood — Smart Macro Tracker",
@@ -10,50 +11,54 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head />
-      <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
-        <div className="max-w-5xl mx-auto px-4 py-6">
-          <header className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <img
-                src="/images/logo.png"
-                alt="FitFood logo"
-                className="w-10 h-10 rounded-md object-cover border"
-                aria-hidden="true"
-              />
-              <div>
-                <h1 className="text-lg font-semibold leading-tight">FitFood</h1>
-                <p className="text-xs text-gray-500">
-                  Smart Macro Tracker &amp; Meal Recommendations
-                </p>
-              </div>
-            </div>
+      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 px-3 py-1.5 rounded-md bg-white border text-sm shadow"
+        >
+          Skip to content
+        </a>
 
-            <div className="flex items-center gap-3">
-              <nav className="hidden md:flex gap-4 text-sm text-gray-600" aria-label="Primary">
-                <Link href="/" className="hover:underline">
-                  Dashboard
-                </Link>
-                <Link href="/meals" className="hover:underline">
-                  Meals
-                </Link>
-                <Link href="/settings" className="hover:underline">
-                  Settings
-                </Link>
-              </nav>
-
-              <Link
-                href="/help"
-                className="inline-flex items-center px-3 py-1 border rounded-md text-sm bg-white hover:shadow"
-              >
-                Help
+        <div className="app-shell max-w-6xl mx-auto px-4 sm:px-6">
+          <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200/60">
+            <div className="flex items-center justify-between h-16">
+              <Link href="/" className="flex items-center gap-3">
+                <Image
+                  src="/logo.png"
+                  alt="FitFood"
+                  width={36}
+                  height={36}
+                  className="rounded-md border border-slate-200 object-cover"
+                  priority
+                />
+                <div>
+                  <h1 className="text-base font-semibold leading-tight">FitFood</h1>
+                  <p className="text-[11px] text-slate-500">
+                    Smart Macro Tracker &amp; Meal Recommendations
+                  </p>
+                </div>
               </Link>
+
+              <div className="flex items-center gap-3">
+                <nav className="hidden md:flex gap-5 text-sm text-slate-700" aria-label="Primary">
+                  <Link href="/" className="hover:text-slate-900">Dashboard</Link>
+                  <Link href="/meals" className="hover:text-slate-900">Meals</Link>
+                  <Link href="/settings" className="hover:text-slate-900">Settings</Link>
+                </nav>
+
+                <Link
+                  href="/help"
+                  className="inline-flex items-center px-3 py-1.5 border rounded-full text-sm bg-white hover:bg-slate-50 shadow-sm focus-visible:ring-2 ring-blue-500 ring-offset-2 ring-offset-white"
+                >
+                  Help
+                </Link>
+              </div>
             </div>
           </header>
 
-          <main className="bg-white rounded-lg shadow-sm p-6">{children}</main>
+          <main id="main" className="py-6 space-y-6">{children}</main>
 
-          <footer className="mt-8 text-center text-xs text-gray-400">
+          <footer className="py-8 text-center text-xs text-slate-400">
             Built by Vibhor Saxena · Demo project
           </footer>
         </div>

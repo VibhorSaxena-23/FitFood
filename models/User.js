@@ -31,15 +31,33 @@ const PreferencesSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const ProfileSchema = new mongoose.Schema(
+  {
+    weight_kg: { type: Number, default: null },
+    height_cm: { type: Number, default: null },
+    age: { type: Number, default: null },
+    sex: { type: String, enum: ["male", "female", "other"], default: "other" },
+    activityLevel: {
+      type: String,
+      enum: ["sedentary", "light", "moderate", "active", "athlete"],
+      default: "light",
+    },
+  },
+  { _id: false }
+);
+
 const UserSchema = new mongoose.Schema(
   {
     name: { type: String, required: false },
     email: { type: String, required: true, unique: true, index: true },
+
     goals: { type: GoalsSchema, default: () => ({}) },
     mealRatios: { type: MealRatiosSchema, default: () => ({}) },
     preferences: { type: PreferencesSchema, default: () => ({}) },
     timezone: { type: String, default: "UTC" },
     favorites: { type: [mongoose.Schema.Types.ObjectId], ref: "Food", default: [] },
+
+    profile: { type: ProfileSchema, default: () => ({}) },
   },
   { timestamps: true }
 );

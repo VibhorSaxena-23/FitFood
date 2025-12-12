@@ -1,8 +1,9 @@
+// components/MacroDisplay.client.tsx
 "use client";
 
 import React from "react";
-import { percent, formatMacroValue } from "@/utils/formatters";
-import { MACRO_LABELS, MACRO_COLORS, MACRO_KEYS } from "@/utils/constants";
+import { MACRO_LABELS, MACRO_COLORS, MACRO_KEYS } from "../utils/constants";
+import { formatMacroValue } from "../utils/formatters";
 
 type MacroMap = { [k: string]: number };
 
@@ -13,38 +14,73 @@ type Props = {
 
 export default function MacroDisplay({ targets, consumed }: Props) {
   return (
-    <div className="p-4 bg-white rounded-lg shadow-sm">
-      <h3 className="font-semibold mb-3">Today's macros</h3>
+    <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-slate-900">Today's macros</h3>
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+          Live
+        </span>
+      </div>
 
       <div className="space-y-3">
         {MACRO_KEYS.map((k) => {
-          const tgt = targets?.[k] || 0;
-          const cons = consumed?.[k] || 0;
-          const pct = percent(cons, Math.max(tgt, 1));
           const label = MACRO_LABELS[k];
           const color = MACRO_COLORS[k];
 
+          const target = targets?.[k] ?? 0;
+          const used = consumed?.[k] ?? 0;
+          const remaining = target - used;
+
+          const rawPct = target > 0 ? (used / target) * 100 : 0;
+          const displayPct = Math.round(rawPct); // can be > 100
+          const barPct = Math.max(0, Math.min(100, rawPct)); // clamp just for bar
+          const isOver = rawPct > 100.0001;
+
           return (
             <div key={k} className="flex items-center gap-3">
-              <div style={{ width: 120 }}>
-                <div className="text-sm font-medium">{label}</div>
-                <div className="text-xs text-gray-500">
-                  {formatMacroValue(k, cons)} / {formatMacroValue(k, tgt)}
+              {/* Text block */}
+              <div className="w-32">
+                <div className="text-sm font-medium text-slate-800">
+                  {label}
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  {formatMacroValue(k, used)} / {formatMacroValue(k, target)}
+                </div>
+                {target > 0 && (
+                  <div
+                    className={
+                      "text-[11px] mt-0.5 " +
+                      (isOver ? "text-rose-600" : "text-emerald-600")
+                    }
+                  >
+                    {isOver
+                      ? `${Math.abs(Math.round(remaining))} over`
+                      : `${Math.max(0, Math.round(remaining))} left`}
+                  </div>
+                )}
+              </div>
+
+              {/* Bar */}
+              <div className="flex-1">
+                <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-3 rounded-full transition-all"
+                    style={{
+                      width: `${barPct}%`,
+                      background: color,
+                    }}
+                  />
                 </div>
               </div>
 
-              <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  style={{
-                    width: `${Math.min(100, Math.round(pct))}%`,
-                    background: color,
-                  }}
-                  className="h-full"
-                />
-              </div>
-
-              <div className="w-12 text-right text-sm font-medium">
-                {Math.round(pct)}%
+              {/* Percentage */}
+              <div
+                className={
+                  "w-14 text-right text-sm font-semibold " +
+                  (isOver ? "text-rose-600" : "text-slate-700")
+                }
+              >
+                {displayPct}%
               </div>
             </div>
           );
